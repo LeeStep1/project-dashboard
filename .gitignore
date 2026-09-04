@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 运行时数据（含真实业务数据，请勿提交）
+dashboard.db
+dashboard.db-journal
+*.db
+*.sqlite
+*.sqlite3
+
+# 上传文件（会议材料等，含真实项目资料）
+static/uploads/
+
+# 日志
+*.log
+server.err.log
+
+# 备份文件
+*.bak
+*.bak[0-9]*
+
+# 一次性数据导入脚本（含历史真实数据）
+import_data.py
+
+# 系统/编辑器
+.DS_Store
+.idea/
+.vscode/

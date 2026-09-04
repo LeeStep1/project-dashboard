@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>李洋的项目看板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#0c0e1a,#141a2e 50%,#0c0e1a);color:#e0e0e0;min-height:100vh;}
+.container{max-width:1600px;margin:0 auto;padding:20px;}
+.header{text-align:center;padding:22px 0 6px;}
+.header h1{font-size:2.2em;background:linear-gradient(90deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header .subtitle{color:#888;font-size:.98em;margin-top:6px;}
+.toolbar{display:flex;justify-content:center;gap:12px;margin:16px 0;flex-wrap:wrap;}
+.btn{background:rgba(0,212,255,.15);border:1px solid rgba(0,212,255,.4);color:#00d4ff;padding:9px 18px;border-radius:10px;cursor:pointer;font-size:.95em;transition:all .25s;}
+.btn:hover{background:rgba(0,212,255,.3);box-shadow:0 0 18px rgba(0,212,255,.3);}
+.btn-ghost{background:transparent;color:#aaa;border-color:rgba(255,255,255,.18);}
+.btn-ghost:hover{color:#fff;border-color:#00d4ff;}
+.btn-sm{padding:5px 12px;font-size:.82em;}
+
+.stats-row{display:flex;align-items:center;justify-content:space-around;margin:16px 0;padding:16px 8px;background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(0,255,136,.03));border:1px solid rgba(0,212,255,.15);border-radius:14px;flex-wrap:wrap;gap:10px;}
+.stat-item{text-align:center;flex:1;min-width:100px;}
+.stat-num{font-size:2.2em;font-weight:800;background:linear-gradient(90deg,#00d4ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;}
+.stat-lbl{color:#888;font-size:.85em;margin-top:4px;}
+.stat-divider{width:1px;height:42px;background:linear-gradient(to bottom,transparent,rgba(0,212,255,.3),transparent);}
+
+.risk-alert{background:linear-gradient(135deg,rgba(255,71,87,.12),rgba(255,71,87,.05));border:1px solid rgba(255,71,87,.35);border-radius:14px;padding:14px 20px;margin:16px 0;}
+.risk-title{color:#ff4757;font-size:1.08em;font-weight:bold;margin-bottom:6px;}
+.risk-item{font-size:.88em;padding:4px 0;display:flex;gap:8px;}
+
+.upcoming{margin:16px 0;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:14px;padding:14px 20px;}
+.upcoming h3{color:#00d4ff;font-size:1em;margin-bottom:8px;}
+.upc-item{font-size:.87em;color:#bbc;padding:4px 0;display:flex;gap:10px;}
+.upc-date{color:#7c8aa0;min-width:100px;}
+.overdue-flag{color:#ff4757;font-weight:bold;}
+
+.boards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start;}
+.board{background:rgba(20,25,45,.55);border:1px solid rgba(0,212,255,.15);border-radius:16px;padding:14px;min-height:300px;}
+.board.pm{border-color:rgba(255,165,2,.4);box-shadow:0 0 24px rgba(255,165,2,.08) inset;}
+.board-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.board-title{font-size:1.12em;font-weight:bold;color:#fff;display:flex;align-items:center;gap:8px;}
+.board.pm .board-title{color:#ffce6b;}
+.board-badge{background:rgba(0,212,255,.2);color:#00d4ff;border-radius:20px;padding:2px 10px;font-size:.78em;}
+.board.pm .board-badge{background:rgba(255,165,2,.2);color:#ffa502;}
+#l-sale{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:12px;align-items:start;}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:12px;align-items:start;}
+.card.done{opacity:.62;}
+.card.done .card-title{color:#9aa6b8;}
+.group-empty{color:#556;font-size:.88em;padding:8px 0;text-align:center;}
+
+.card{background:linear-gradient(135deg,rgba(22,28,48,.95),rgba(14,18,32,.95));border:1px solid rgba(0,212,255,.2);border-radius:14px;padding:14px;margin-bottom:12px;position:relative;overflow:hidden;cursor:pointer;transition:all .2s;}
+.card:hover{transform:translateY(-2px);border-color:rgba(0,212,255,.45);box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cc,#00d4ff),transparent);}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.card-title{font-size:1.08em;font-weight:bold;color:#fff;}
+.card-meta{color:#9aa;font-size:.8em;margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;}
+.chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:2px 9px;font-size:.74em;}
+.chip-cat{background:rgba(0,212,255,.14);color:#00d4ff;border-color:rgba(0,212,255,.3);}
+.chip-cur{background:rgba(255,165,2,.16);color:#ffce6b;border-color:rgba(255,165,2,.35);}
+.tag{padding:3px 9px;border-radius:20px;font-size:.73em;font-weight:bold;white-space:nowrap;}
+.tag-progress{background:rgba(255,165,2,.2);color:#ffa502;border:1px solid rgba(255,165,2,.4);}
+.tag-urgent,.tag-risk{background:rgba(255,71,87,.2);color:#ff4757;border:1px solid rgba(255,71,87,.4);}
+.tag-waiting{background:rgba(46,213,115,.2);color:#2ed573;border:1px solid rgba(46,213,115,.4);}
+.progress-wrap{display:flex;align-items:center;gap:10px;margin:10px 0 4px;}
+.progress-bar{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#00ff88);}
+.progress-text{font-size:.78em;color:#9aa;width:36px;text-align:right;}
+.card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:.78em;color:#8a96a8;}
+.risk-badge{background:rgba(255,71,87,.2);color:#ff4757;border-radius:20px;padding:2px 9px;font-weight:bold;}
+
+/* ===== Drawer ===== */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;}
+.drawer-overlay.active{display:block;}
+.drawer{position:fixed;top:0;right:0;height:100%;width:680px;max-width:96vw;background:linear-gradient(135deg,#12162a,#0a0d1a);border-left:1px solid rgba(0,212,255,.3);z-index:1001;transform:translateX(100%);transition:transform .3s;overflow-y:auto;padding:22px 24px 60px;}
+.drawer.active{transform:translateX(0);}
+.drawer-close{position:absolute;top:16px;right:18px;background:none;border:none;color:#9ab;font-size:1.4em;cursor:pointer;}
+.drawer h2{color:#fff;font-size:1.35em;padding-right:30px;word-break:break-all;}
+.dsec{font-size:.7em;font-weight:normal;color:#8a96a8;}
+.section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-top:14px;}
+.section h3{font-size:1em;color:#00d4ff;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.field{margin-bottom:10px;}
+.field label{display:block;color:#9ab;font-size:.8em;margin-bottom:4px;}
+.field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 10px;color:#fff;font-size:.9em;outline:none;font-family:inherit;}
+.field textarea{min-height:54px;resize:vertical;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#00d4ff;}
+.field option,.modal-box option{background:#1a1c2e;color:#e0e0e0;}
+select,input,textarea{color-scheme:dark;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mini-btn{background:none;border:1px solid rgba(255,255,255,.18);color:#9ab;padding:4px 11px;border-radius:7px;font-size:.8em;cursor:pointer;transition:all .2s;}
+.mini-btn:hover{border-color:#00d4ff;color:#00d4ff;}
+.mini-btn.danger:hover{border-color:#ff4757;color:#ff4757;}
+.mini-btn.ok:hover{border-color:#2ed573;color:#2ed573;}
+.mini-btn.warn:hover{border-color:#ffa502;color:#ffa502;}
+.link{color:#00d4ff;font-size:.85em;text-decoration:none;word-break:break-all;}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.spacer{flex:1;}
+
+/* timeline in drawer */
+.timeline{position:relative;padding-left:20px;margin-top:4px;}
+.timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:linear-gradient(to bottom,rgba(0,212,255,.5),rgba(0,212,255,.05));}
+.tl-item{position:relative;padding:8px 0 8px 10px;}
+.tl-dot{position:absolute;left:-19px;top:13px;width:12px;height:12px;border-radius:50%;background:#00d4ff;border:2px solid rgba(255,255,255,.25);}
+.tl-item.done .tl-dot{background:#2ed573;box-shadow:0 0 8px rgba(46,213,115,.6);}
+.tl-item.current .tl-dot{background:#ffa502;box-shadow:0 0 10px rgba(255,165,2,.8);}
+.tl-item.overdue:not(.done) .tl-dot{background:#ff4757;}
+.tl-item.meeting .tl-dot{background:#a29bfe;}
+.tl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tl-title{color:#e6e6e6;font-weight:bold;font-size:.95em;}
+.tl-item.current .tl-title{color:#ffce6b;}
+.tl-date{font-size:.78em;color:#7c8aa0;}
+.tl-date.missing{color:#ff8c8c;}
+.tl-type{font-size:.68em;padding:1px 7px;border-radius:10px;background:rgba(0,212,255,.15);color:#00d4ff;border:1px solid rgba(0,212,255,.3);}
+.tl-ops{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;}
+.tl-date-input{font-size:.78em;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:3px 6px;color:#fff;}
+
+.todos-box{margin-top:8px;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;}
+.todo-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:.85em;border-bottom:1px solid rgba(255,255,255,.04);}
+.todo-item.done .todo-text{text-decoration:line-through;color:#6b7a8d;}
+.todo-text{flex:1;white-space:pre-line;}
+.pri-high{color:#ff4757;}.pri-medium{color:#ffa502;}.pri-low{color:#2ed573;}
+.range-wrap{display:flex;align-items:center;gap:6px;margin:3px 0;}
+.range-wrap input[type=range]{flex:1;}
+.todo-log{font-size:.76em;color:#8a96a8;margin:3px 0 3px 16px;}
+.tl-mini{position:relative;margin:6px 0 4px 4px;padding-left:14px;}
+.tl-mini::before{content:'';position:absolute;left:3px;top:4px;bottom:4px;width:2px;background:linear-gradient(to bottom,rgba(0,212,255,.45),rgba(0,212,255,.08));}
+.tl-mini-item{position:relative;padding:3px 0;display:flex;gap:8px;}
+.tl-mini-item::before{content:'';position:absolute;left:-14px;top:8px;width:7px;height:7px;border-radius:50%;background:#00d4ff;border:1px solid rgba(255,255,255,.3);}
+.tl-mini-date{color:#6f7d92;font-size:.74em;min-width:92px;flex-shrink:0;}
+.tl-mini-text{color:#c2cbd8;font-size:.8em;flex:1;white-space:pre-line;}
+.todo-due{font-size:.72em;color:#8a96a8;margin-left:8px;white-space:nowrap;}
+.todo-due.overdue{color:#ff4757;font-weight:600;}
+.tl-mini-label{font-size:.74em;color:#9ab;margin:6px 0 2px;font-weight:600;}
+.completed-at{font-size:.74em;color:#2ed573;margin:2px 0;}
+.todo-log div{border-left:2px solid rgba(0,212,255,.3);padding:1px 0 1px 8px;margin:2px 0;white-space:pre-line;}
+
+.risk-item{background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:.86em;}
+.risk-item.resolved{opacity:.6;}
+.risk-item.resolved .rdesc{text-decoration:line-through;}
+.supplier-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.2);border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:.86em;}
+.empty{color:#556;font-size:.85em;padding:6px 0;text-align:center;}
+.inline-input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:5px 8px;color:#fff;font-size:.85em;outline:none;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1100;justify-content:center;align-items:center;padding:20px;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:linear-gradient(135deg,#1a1c2e,#0c0e1a);border:1px solid rgba(0,212,255,.3);border-radius:18px;padding:24px;max-width:460px;width:100%;}
+.modal-title{font-size:1.1em;color:#fff;margin-bottom:14px;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;}
+.modal-btn{padding:8px 18px;border-radius:10px;border:none;cursor:pointer;font-size:.9em;}
+.modal-btn-cancel{background:rgba(255,255,255,.1);color:#aaa;}
+.modal-btn-confirm{background:linear-gradient(135deg,#00d4ff,#00ff88);color:#fff;font-weight:bold;}
+
+.sync{position:fixed;top:16px;right:16px;background:rgba(0,0,0,.8);border:1px solid #00d4ff;border-radius:20px;padding:6px 13px;color:#00d4ff;font-size:.76em;display:flex;gap:7px;align-items:center;z-index:800;}
+.sync-dot{width:8px;height:8px;background:#00ff88;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.footer{text-align:center;padding:24px;color:#556;font-size:.85em;}
+@media(max-width:1000px){.boards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="sync"><div class="sync-dot"></div><span>实时同步 · <span id="lastUpdate">-</span></span></div>
+<div class="container">
+  <div class="header">
+    <h1>📊 李洋的项目看板</h1>
+    <div class="subtitle">商务属性 + 会议记录 + 计划时间线 + 风险管控</div>
+  </div>
+  <div class="toolbar">
+    <button class="btn" onclick="openProjectModal()">➕ 新建项目</button>
+    <button class="btn btn-ghost" onclick="loadAllData()">🔄 刷新</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat-item"><div class="stat-num" id="statProjects">0</div><div class="stat-lbl">项目总数</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><div class="stat-num" id="statPending">0</div><div class="stat-lbl">待办事项</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><div class="stat-num" id="statRisk">0</div><div class="stat-lbl">未解决风险</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><div class="stat-num" id="statOverdue">0</div><div class="stat-lbl">逾期步骤</div></div>
+  </div>
+  <div class="risk-alert" id="riskAlert" style="display:none;">
+    <div class="risk-title">🚨 风险预警（未解决）</div>
+    <div id="riskList"></div>
+  </div>
+  <div class="upcoming"><h3>📅 近期关键节点</h3><div id="upcomingList"></div></div>
+  <div class="boards">
+    <div class="board pm" style="grid-column:1 / -1;">
+      <div class="board-head"><div class="board-title">🏗 实施中 <span class="board-badge" id="c-active">0</span></div></div>
+      <div id="l-active" class="card-grid"></div>
+    </div>
+    <div class="board" style="grid-column:1 / -1;">
+      <div class="board-head"><div class="board-title" style="color:#6f7d92;">✅ 已完成 <span class="board-badge" id="c-done">0</span></div></div>
+      <div id="l-done" class="card-grid"></div>
+    </div>
+  </div>
+  <div class="footer">项目管理看板 · FastAPI + SQLite</div>
+</div>
+
+<!-- 新建项目 -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal-box">
+    <div class="modal-title">➕ 新建项目</div>
+    <div class="field"><label>项目名称 *</label><input id="pjName" oninput="checkPj()"></div>
+    <div class="grid2">
+      <div class="field"><label>前向客户</label><input id="pjCustomer"></div>
+      <div class="field"><label>项目经理</label><input id="pjPm"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>项目分类</label><select id="pjCategory"></select></div>
+    </div>
+    <div class="field"><label>项目内容简介</label><textarea id="pjDesc"></textarea></div>
+    <div class="grid2">
+      <div class="field"><label>项目金额（万元）</label><input id="pjAmount" type="number" step="0.01" value="0"></div>
+      <div class="field"><label>利润率（%）</label><input id="pjMargin" type="number" step="0.1" value="0"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>运维承接组</label><input id="pjOps"></div>
+      <div class="field"><label>健康状态</label><select id="pjStatus"><option value="progress">进行中</option><option value="urgent">紧急</option><option value="waiting">等待中</option><option value="risk">有风险</option></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>项目状态</label><select id="pjCompleted"><option value="0">实施中</option><option value="1">已完成</option></select></div>
+      <div class="field"><label style="height:16px;"></label><label style="display:flex;align-items:center;gap:8px;color:#ccc;"><input type="checkbox" id="pjEarly" style="width:auto;"> 是否为提前实施</label></div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" onclick="closeProjectModal()">取消</button>
+      <button class="modal-btn modal-btn-confirm" id="pjBtn" disabled onclick="submitProject()">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增供应商 -->
+<div class="modal-overlay" id="supplierModal">
+  <div class="modal-box">
+    <div class="modal-title">🏭 新增后向供应商</div>
+    <div class="field"><label>供应商名称 *</label><input id="spName" oninput="document.getElementById('spBtn').disabled=!this.value.trim()"></div>
+    <div class="field"><label>采购方式</label><select id="spMethod"><option selected>公开询比</option><option>直接采购</option><option>公开招标</option><option>原子能力下单</option></select></div>
+    <div class="field"><label>采购内容</label><input id="spContent" placeholder="如：服务器设备、网络设备、软件平台、实施服务..."></div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" onclick="closeSupplierModal()">取消</button>
+      <button class="modal-btn modal-btn-confirm" id="spBtn" disabled onclick="submitSupplier()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增待办 -->
+<div class="modal-overlay" id="todoModal">
+  <div class="modal-box">
+    <div class="modal-title">✅ 新增待办<span id="todoStep" style="font-size:.7em;color:#8a96a8;font-weight:normal;"></span></div>
+    <div class="field"><label>待办内容 *</label><textarea id="tdText" oninput="document.getElementById('tdBtn').disabled=!this.value.trim()"></textarea></div>
+    <div class="grid2">
+      <div class="field"><label>优先级</label><select id="tdPriority"><option value="high">高</option><option value="medium" selected>中</option><option value="low">低</option></select></div>
+      <div class="field"><label>截止日期</label><input type="date" id="tdDue"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" onclick="closeTodoModal()">取消</button>
+      <button class="modal-btn modal-btn-confirm" id="tdBtn" disabled onclick="submitTodoModal()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增风险 -->
+<div class="modal-overlay" id="riskModal">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ 新增风险点</div>
+    <div class="field"><label>风险描述 *</label><textarea id="rkDesc" oninput="document.getElementById('rkBtn').disabled=!this.value.trim()"></textarea></div>
+    <div class="field"><label>风险等级</label><select id="rkSev"><option value="high">高</option><option value="medium" selected>中</option><option value="low">低</option></select></div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" onclick="closeRiskModal()">取消</button>
+      <button class="modal-btn modal-btn-confirm" id="rkBtn" disabled onclick="submitRisk()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 详情抽屉 -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  <h2 id="dTitle"></h2>
+  <div class="card-meta" id="dMeta" style="margin:8px 0;"></div>
+
+  <div class="section">
+    <h3>📋 项目属性
+      <span>
+        <button class="mini-btn" onclick="parseReview()" title="用已上传的项目评审会材料 AI 解析">🤖 AI 解析</button>
+        <button class="mini-btn" id="dEditBtn" onclick="toggleEditAttr()">编辑</button>
+      </span>
+    </h3>
+    <div id="dAttrView"></div>
+    <div id="dAttrEdit" style="display:none;">
+      <div class="field"><label>项目名称</label><input id="deName"></div>
+      <div class="grid2">
+        <div class="field"><label>前向客户</label><input id="deCustomer"></div>
+        <div class="field"><label>项目经理</label><input id="dePm"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>项目分类</label><select id="deCategory"></select></div>
+        <div class="field"><label>运维承接组</label><input id="deOps"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>项目金额（万元）</label><input id="deAmount" type="number" step="0.01"></div>
+        <div class="field"><label>利润率（%）</label><input id="deMargin" type="number" step="0.1"></div>
+      </div>
+      <div class="field"><label>项目内容简介</label><textarea id="deDesc"></textarea></div>
+      <div class="grid2">
+        <div class="field"><label>健康状态</label><select id="deStatus"><option value="progress">进行中</option><option value="urgent">紧急</option><option value="waiting">等待中</option><option value="risk">有风险</option></select></div>
+        <div class="field"><label>项目状态</label><select id="deCompleted"><option value="0">实施中</option><option value="1">已完成</option></select></div>
+      </div>
+      <div class="field"><label style="display:flex;align-items:center;gap:8px;color:#ccc;"><input type="checkbox" id="deEarly" style="width:auto;"> 是否为提前实施</label></div>
+      <div class="row"><span class="spacer"></span><button class="mini-btn" onclick="toggleEditAttr()">取消</button><button class="mini-btn ok" onclick="saveAttr()">保存</button></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>📁 会议记录</h3>
+    <div id="dMeetings"></div>
+  </div>
+
+  <div class="section">
+    <h3>🏭 后向供应商
+      <span><button class="mini-btn" onclick="openSupplierModal()">+ 新增</button></span>
+    </h3>
+    <div id="dSuppliers"></div>
+  </div>
+
+  <div class="section">
+    <h3>🕒 时间线</h3>
+    <div id="dTimeline" class="timeline"></div>
+  </div>
+
+  <div class="section">
+    <h3>⚠️ 风险点
+      <span><button class="mini-btn danger" onclick="openRiskModal()">+ 新增风险</button></span>
+    </h3>
+    <div id="dRisks"></div>
+  </div>
+
+  <div class="section" style="border-color:rgba(255,71,87,.3);">
+    <h3 style="color:#ff4757;">🗑️ 删除项目</h3>
+    <button class="mini-btn danger" onclick="deleteCurrentProject()">删除该项目（软删除）</button>
+  </div>
+</div>
+
+<script>
+const API = location.origin;
+const S = { presale:'售前', sale:'售中', aftersale:'售后' };
+const STATUS = { progress:'进行中', urgent:'紧急', waiting:'等待中', risk:'有风险' };
+const SEV = { high:'高', medium:'中', low:'低' };
+const SEV_C = { high:'#ff4757', medium:'#ffa502', low:'#2ed573' };
+let meta = { categories:[], procurement_methods:[], severities:[], event_types:{}, meetings:{}, sale_steps:{} };
+let projects = [];
+let current = null;
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtDate(iso){if(!iso)return '';const d=new Date(iso);if(isNaN(d))return iso;return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function today(){return new Date().toISOString().split('T')[0];}
+function fmtDT(iso){
+  if(!iso)return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(iso))return iso;
+  if(/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(iso)){return iso.slice(0,16).replace('T',' ');}
+  const d=new Date(iso);
+  if(isNaN(d))return iso;
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function wan(yuan){return ((Number(yuan)||0)/10000).toLocaleString('zh-CN',{maximumFractionDigits:2});}
+function catLabel(k){return (meta.categories.find(c=>c.key===k)||{}).label||k;}
+
+async function loadMeta(){try{meta=await(await fetch(`${API}/api/meta`)).json();}catch(e){console.error(e);}}
+
+async function loadAllData(){
+  try{
+    const [ps, st] = await Promise.all([
+      fetch(`${API}/api/projects`).then(r=>r.json()),
+      fetch(`${API}/api/stats`).then(r=>r.json())
+    ]);
+    projects = ps;
+    renderStats(st);
+    renderRisks(ps);
+    renderUpcoming(st.upcoming_events||[]);
+    renderBoards(ps);
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-CN');
+    if(current){ const fresh = ps.find(p=>p.id===current.id); if(fresh){ current=fresh; renderDrawer(); } }
+  }catch(e){console.error('加载失败',e);}
+}
+
+function renderStats(s){
+  document.getElementById('statProjects').textContent=s.total_projects||0;
+  document.getElementById('statPending').textContent=s.pending_todos||0;
+  document.getElementById('statRisk').textContent=s.risk_count||0;
+  document.getElementById('statOverdue').textContent=s.overdue_count||0;
+  const ca=document.getElementById('c-active'); if(ca) ca.textContent=s.active_projects||0;
+  const cd=document.getElementById('c-done'); if(cd) cd.textContent=s.completed_projects||0;
+}
+
+function renderRisks(ps){
+  const risks=[];
+  ps.forEach(p=>(p.risks||[]).forEach(r=>{if(!r.resolved)risks.push({p:p.name,d:r.description,s:r.severity});}));
+  const box=document.getElementById('riskAlert'), list=document.getElementById('riskList');
+  if(!risks.length){box.style.display='none';return;}
+  box.style.display='block';
+  list.innerHTML=risks.map(r=>`<div class="risk-item"><span style="color:${SEV_C[r.s]}">●</span><b>${esc(r.p)}</b>：${esc(r.d)}</div>`).join('');
+}
+
+function renderUpcoming(evs){
+  const box=document.getElementById('upcomingList');
+  if(!evs.length){box.innerHTML='<div class="empty">暂无带日期的计划节点</div>';return;}
+  const td=today();
+  box.innerHTML=evs.map(e=>{const od=(!e.is_done&&e.time&&e.time<td)?'<span class="overdue-flag">逾期</span>':'';return `<div class="upc-item"><span class="upc-date">${fmtDate(e.time)}</span><span><b>${esc(e.project_name)}</b> · ${esc(e.event_type)} ${od}</span></div>`;}).join('');
+}
+
+function renderBoards(ps){
+  const active=ps.filter(p=>!p.completed);
+  const done=ps.filter(p=>p.completed);
+  const la=document.getElementById('l-active');
+  const ld=document.getElementById('l-done');
+  la.innerHTML=active.length?active.map(cardHtml).join(''):'<div class="group-empty">暂无实施中项目</div>';
+  ld.innerHTML=done.length?done.map(cardHtml).join(''):'<div class="group-empty">暂无已完成项目</div>';
+}
+
+function cardHtml(p){
+  const status=p.status||'progress';
+  const openRisks=(p.risks||[]).filter(r=>!r.resolved).length;
+  const todoTotal=(p.todos||[]).length;
+  const todoDone=(p.todos||[]).filter(t=>t.completed).length;
+  return `
+  <div class="card ${p.completed?'done':''}" style="--cc:${p.color||'#00d4ff'}" onclick="openDrawer('${p.id}')">
+    <div class="card-top">
+      <div>
+        <div class="card-title">${esc(p.name)}</div>
+        <div class="card-meta">
+          ${p.customer?`<span class="chip">👤 ${esc(p.customer)}</span>`:''}
+          <span class="chip chip-cat">${esc(p.category_label)}</span>
+          ${p.current_step?`<span class="chip chip-cur">📍 ${esc(p.current_step)}</span>`:''}
+          ${p.completed?'<span class="chip" style="color:#2ed573;border-color:rgba(46,213,115,.4);">✅ 已完成</span>':'<span class="chip" style="color:#ffa502;border-color:rgba(255,165,2,.4);">🏗 实施中</span>'}
+          ${p.early_implementation?'<span class="chip" style="color:#00d4ff;border-color:rgba(0,212,255,.4);">⚡提前实施</span>':''}
+        </div>
+      </div>
+      <span class="tag tag-${status}">${esc(p.status_text||STATUS[status])}</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:${p.progress||0}%"></div></div>
+      <div class="progress-text">${p.progress||0}%</div>
+    </div>
+    <div class="card-foot">
+      <span>💰 ${wan(p.amount)}万 · 利润率${p.profit_margin||0}%</span>
+      <span class="row">
+        <span>待办 ${todoDone}/${todoTotal}</span>
+        ${openRisks?`<span class="risk-badge">风险 ${openRisks}</span>`:''}
+      </span>
+    </div>
+  </div>`;
+}
+
+/* ---------- 新建项目 ---------- */
+function fillCategoryOptions(sel){
+  sel.innerHTML=meta.categories.map(c=>`<option value="${c.key}">${c.label}</option>`).join('');
+}
+function openProjectModal(){
+  pjName.value='';pjCustomer.value='';pjPm.value='';pjDesc.value='';pjAmount.value=0;pjMargin.value=0;pjOps.value='';
+  fillCategoryOptions(pjCategory);pjCategory.value='platform';pjStatus.value='progress';pjCompleted.value='0';pjEarly.checked=false;
+  checkPj();projectModal.classList.add('active');
+}
+function closeProjectModal(){projectModal.classList.remove('active');}
+function checkPj(){pjBtn.disabled=!pjName.value.trim();}
+async function submitProject(){
+  const body={name:pjName.value.trim(),customer:pjCustomer.value.trim(),pm:pjPm.value.trim(),
+    category:pjCategory.value,description:pjDesc.value.trim(),
+    amount:Math.round(parseFloat(pjAmount.value||0)*10000),profit_margin:parseFloat(pjMargin.value||0),
+    ops_team:pjOps.value.trim(),status:pjStatus.value,status_text:STATUS[pjStatus.value],early_implementation:pjEarly.checked?1:0,completed:parseInt(pjCompleted.value)};
+  if(!body.name)return;
+  await fetch(`${API}/api/projects`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  closeProjectModal();loadAllData();
+}
+
+/* ---------- 抽屉 ---------- */
+function openDrawer(id){
+  current=projects.find(p=>p.id===id);
+  if(!current)return;
+  drawerOverlay.classList.add('active');drawer.classList.add('active');
+  fillCategoryOptions(deCategory);
+  renderDrawer();
+}
+function closeDrawer(){drawerOverlay.classList.remove('active');drawer.classList.remove('active');current=null;}
+function esc2(s){return esc(s);}
+
+function renderDrawer(){
+  const p=current;
+  dTitle.innerHTML=`${esc(p.name)} <span class="dsec">(${esc(p.stage_label)})</span>`;
+  dMeta.innerHTML=`${p.customer?`<span class="chip">👤 ${esc(p.customer)}</span>`:''}<span class="chip chip-cat">${esc(p.category_label)}</span>${p.current_step?`<span class="chip chip-cur">📍 ${esc(p.current_step)}</span>`:''}`;
+  dAttrEdit.style.display='none';dAttrView.style.display='block';
+  renderAttr();renderMeetings();renderSuppliers();renderTimeline();renderRisksDrawer();
+}
+
+function renderAttr(){
+  const p=current;
+  dAttrView.innerHTML=`
+    <div class="grid2">
+      <div><span class="dsec">前向客户：</span>${esc(p.customer)||'—'}</div>
+      <div><span class="dsec">项目经理：</span>${esc(p.pm)||'—'}</div>
+      <div><span class="dsec">项目分类：</span>${esc(p.category_label)}</div>
+      <div><span class="dsec">运维承接组：</span>${esc(p.ops_team)||'—'}</div>
+      <div><span class="dsec">项目金额：</span>💰 ${wan(p.amount)} 万元</div>
+      <div><span class="dsec">利润率：</span>${p.profit_margin||0}%</div>
+      <div><span class="dsec">项目状态：</span>${p.completed?'<span style="color:#2ed573">已完成</span>':'<span style="color:#ffa502">实施中</span>'}</div>
+      <div><span class="dsec">提前实施：</span>${p.early_implementation?'<span style="color:#00d4ff">是</span>':'否'}</div>
+    </div>
+    <div style="margin-top:8px;"><span class="dsec">项目简介：</span>${esc(p.description)||'—'}</div>`;
+}
+function toggleEditAttr(){
+  const show=dAttrEdit.style.display==='none';
+  dAttrEdit.style.display=show?'block':'none';dAttrView.style.display=show?'none':'block';
+  if(show){
+    const p=current;
+    deName.value=p.name;deCustomer.value=p.customer||'';dePm.value=p.pm||'';
+    deCategory.value=p.category||'platform';deOps.value=p.ops_team||'';
+    deAmount.value=wan(p.amount);deMargin.value=p.profit_margin||0;deDesc.value=p.description||'';
+    deStatus.value=p.status;deCompleted.value=p.completed?'1':'0';deEarly.checked=!!p.early_implementation;
+  }
+}
+async function saveAttr(){
+  const body={name:deName.value.trim(),customer:deCustomer.value.trim(),pm:dePm.value.trim(),
+    category:deCategory.value,ops_team:deOps.value.trim(),amount:Math.round(parseFloat(deAmount.value||0)*10000),
+    profit_margin:parseFloat(deMargin.value||0),description:deDesc.value.trim(),
+    status:deStatus.value,status_text:STATUS[deStatus.value],early_implementation:deEarly.checked?1:0,completed:parseInt(deCompleted.value)};
+  await fetch(`${API}/api/projects/${current.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  dAttrEdit.style.display='none';dAttrView.style.display='block';
+  await loadAllData();
+}
+
+/* 会议 */
+function renderMeetings(){
+  const p=current;
+  dMeetings.innerHTML=Object.entries(p.meetings||{}).map(([k,m])=>{
+    const fileUrl=m.file?`${API}/static/${m.file}`:'';
+    const fileName=m.file?decodeURIComponent(m.file.split('/').pop()):'';
+    return `
+    <div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+      <div class="row" style="margin-bottom:6px;">
+        <b style="min-width:96px;">${esc(m.label)}</b>
+        <input type="date" class="tl-date-input" id="mtg-${k}" value="${m.date||''}">
+        <button class="mini-btn ok" onclick="saveMeeting('${k}')">保存日期</button>
+        <span class="spacer"></span>
+        ${fileUrl?`<a class="link" href="${fileUrl}" target="_blank">📄 ${esc(fileName)}</a>
+          <button class="mini-btn danger" onclick="deleteMeetingFile('${k}')">删除文件</button>`:''}
+      </div>
+      <div class="row">
+        <input type="file" id="mf-${k}" style="font-size:.8em;color:#aaa;" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip">
+        <button class="mini-btn" onclick="uploadMeetingFile('${k}')">⬆ 上传文件</button>
+        ${k==='project_review'?'<button class="mini-btn ok" onclick="parseReview()" title="AI 解析已上传的评审材料">🤖 AI 解析</button>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+async function saveMeeting(k){
+  const date=document.getElementById(`mtg-${k}`).value;
+  await fetch(`${API}/api/projects/${current.id}/meetings`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({[`${k}_at`]:date})});
+  await loadAllData();
+}
+async function uploadMeetingFile(k){
+  const inp=document.getElementById(`mf-${k}`);
+  if(!inp.files.length){alert('请先选择文件');return;}
+  const fd=new FormData();fd.append('file',inp.files[0]);
+  await fetch(`${API}/api/projects/${current.id}/meetings/${k}/file`,{method:'POST',body:fd});
+  await loadAllData();
+  if(k==='project_review'){ parseReview(); }
+}
+async function deleteMeetingFile(k){
+  if(!confirm('删除该会议文件？'))return;
+  await fetch(`${API}/api/projects/${current.id}/meetings/${k}/file`,{method:'DELETE'});
+  await loadAllData();
+}
+
+/* 供应商 */
+function supplierMethodOptions(cur){
+  return (meta.procurement_methods&&meta.procurement_methods.length?meta.procurement_methods:['公开询比','直接采购','公开招标','原子能力下单'])
+    .map(m=>`<option ${m===cur?'selected':''}>${esc(m)}</option>`).join('');
+}
+function renderSuppliers(){
+  const list=current.suppliers||[];
+  dSuppliers.innerHTML=list.length?list.map(s=>`
+    <div class="supplier-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <span style="flex:1;"><b>${esc(s.name)}</b>
+          <select class="inline-input" style="width:104px;margin-left:6px;padding:2px 4px;" onchange="updateSupplier(${s.id},'procurement_method',this.value)">${supplierMethodOptions(s.procurement_method)}</select>
+        </span>
+        <button class="mini-btn danger" onclick="deleteSupplier(${s.id})">删除</button>
+      </div>
+      <input class="inline-input" value="${esc(s.supply_content||'')}" placeholder="采购内容（如：服务器设备、网络设备、实施服务...）" onchange="updateSupplier(${s.id},'supply_content',this.value)">
+    </div>`).join(''):'<div class="empty">暂无供应商</div>';
+}
+function openSupplierModal(){
+  spName.value='';spMethod.value='公开询比';spContent.value='';spBtn.disabled=true;
+  supplierModal.classList.add('active');setTimeout(()=>spName.focus(),50);
+}
+function closeSupplierModal(){supplierModal.classList.remove('active');}
+async function submitSupplier(){
+  const name=spName.value.trim();if(!name)return;
+  await fetch(`${API}/api/projects/${current.id}/suppliers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,procurement_method:spMethod.value,supply_content:spContent.value.trim()})});
+  closeSupplierModal();await loadAllData();
+}
+async function updateSupplier(id,field,value){
+  await fetch(`${API}/api/suppliers/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({[field]:value})});
+  if(current&&current.suppliers){const sp=current.suppliers.find(x=>x.id===id);if(sp)sp[field]=value;}
+}
+async function deleteSupplier(id){
+  if(!confirm('删除该供应商？'))return;
+  await fetch(`${API}/api/suppliers/${id}`,{method:'DELETE'});
+  await loadAllData();
+}
+
+/* 时间线 */
+function renderTimeline(){
+  const p=current;
+  const td=today();
+  const events=p.timeline||[];
+  // 会议节点
+  const meetNodes=[];
+  Object.entries(p.meetings||{}).forEach(([k,m])=>{
+    if(m.date) meetNodes.push({meeting:true,label:m.label,date:m.date,file:m.file,key:k});
+  });
+  const saleSteps=events.filter(e=>e.is_sale_step);
+  const customs=events.filter(e=>!e.is_sale_step);
+
+  let html='';
+  if(saleSteps.length){
+    html+=saleSteps.map(e=>{
+      const overdue=(!e.is_done&&e.time&&e.time<td);
+      const isCurrent=(e.event_type===p.current_step);
+      const cls=`tl-item ${e.is_done?'done':''} ${isCurrent?'current':''} ${overdue?'overdue':''}`;
+      const todos=(p.todos||[]).filter(t=>t.milestone_id===e.id);
+      const todosHtml=renderStepTodos(e.id,todos);
+      return `
+        <div class="${cls}">
+          <div class="tl-dot"></div>
+          <div class="tl-head">
+            <span class="tl-title">${esc(e.event_type)}</span>
+            ${isCurrent?'<span class="chip chip-cur">当前</span>':''}
+          </div>
+          <div class="row" style="margin-top:4px;">
+            <input type="date" class="tl-date-input" value="${e.time||''}" onchange="setEventDate(${e.id},this.value)">
+            ${e.time?`<span class="tl-date">${fmtDate(e.time)}</span>`:'<span class="tl-date missing">未设日期</span>'}
+            ${overdue?'<span class="overdue-flag">逾期</span>':''}
+            <span class="spacer"></span>
+            <button class="mini-btn ${e.is_done?'warn':'ok'}" onclick="toggleEvent(${e.id},${e.is_done?0:1})">${e.is_done?'↩ 标记未完成':'✓ 标记完成'}</button>
+            <button class="mini-btn" onclick="openTodoModal(${e.id},'${esc(e.event_type)}')">+ 待办</button>
+          </div>
+          ${e.text&&e.text!==e.event_type?`<div class="tl-desc" style="color:#8a96a8;font-size:.82em;margin-top:3px;">${esc(e.text)}</div>`:''}
+          ${todosHtml}
+        </div>`;
+    }).join('');
+  }
+  // 未分配阶段待办（仅售中展示）
+  const unassigned=(p.todos||[]).filter(t=>!t.milestone_id);
+  if(p.stage==='sale' && unassigned.length){
+    html+=`<div class="tl-item"><div class="tl-dot" style="background:#666;"></div><div class="tl-title">未分配阶段待办</div>${renderStepTodos(null,unassigned)}</div>`;
+  }
+  // 自定义节点
+  if(customs.length){
+    html+='<div style="color:#7c8aa0;font-size:.8em;margin:12px 0 4px;">其他节点</div>';
+    html+=customs.map(e=>{
+      const overdue=(!e.is_done&&e.time&&e.time<td);
+      return `<div class="tl-item ${e.is_done?'done':''} ${overdue?'overdue':''}">
+        <div class="tl-dot"></div>
+        <div class="tl-head"><span class="tl-type">${esc(e.event_type)}</span><span class="tl-date">${fmtDate(e.time)}</span></div>
+        <div class="tl-title" style="font-weight:normal;">${esc(e.text)} ${e.is_done?'✅':''}</div>
+        <div class="tl-ops">
+          <button class="mini-btn" onclick="toggleEvent(${e.id},${e.is_done?0:1})">${e.is_done?'标记未完成':'标记完成'}</button>
+          <button class="mini-btn danger" onclick="deleteEvent(${e.id})">删除</button>
+        </div></div>`;
+    }).join('');
+  }
+  // 会议并入时间线
+  if(meetNodes.length){
+    html+='<div style="color:#a29bfe;font-size:.8em;margin:12px 0 4px;">会议记录</div>';
+    html+=meetNodes.map(m=>{
+      const f=m.file?` <a class="link" href="${API}/static/${m.file}" target="_blank">📄文件</a>`:'';
+      return `<div class="tl-item meeting"><div class="tl-dot"></div><div class="tl-head"><span class="tl-date">${fmtDate(m.date)}</span><span class="tl-type">会议</span></div><div class="tl-title" style="font-weight:normal;color:#c9c2ff;">${esc(m.label)}${f}</div></div>`;
+    }).join('');
+  }
+  if(!html) html='<div class="empty">暂无时间线节点</div>';
+  dTimeline.innerHTML=html;
+}
+
+function renderStepTodos(mid,todos){
+  if(!todos.length) return '';
+  const todayStr=today();
+  return `<div class="todos-box">${todos.map(t=>{
+    const logs=(t.progress_logs||[]).slice().reverse().map(l=>
+      `<div class="tl-mini-item"><span class="tl-mini-date">${fmtDT(l.progress_date||l.time)}</span><span class="tl-mini-text">${esc(l.text)}</span></div>`
+    ).join('');
+    const overdue=!t.completed&&t.due_date&&t.due_date<todayStr;
+    return `<div class="todo-item ${t.completed?'done':''}">
+      <input type="checkbox" ${t.completed?'checked':''} onchange="toggleTodo(${t.id},this.checked)">
+      <div style="flex:1;">
+        <div class="todo-text"><span class="pri-${t.priority}">●</span> ${esc(t.text)}
+          ${t.due_date?`<span class="todo-due ${overdue?'overdue':''}" title="截止日期">📅 ${fmtDate(t.due_date)}${overdue?' 已逾期':''}</span>`:''}
+        </div>
+        ${!t.completed?`<div class="range-wrap"><input type="range" min="0" max="100" value="${t.progress||0}" onchange="setProgress(${t.id},this.value)"><span style="font-size:.76em;color:#8a96a8;width:34px;">${t.progress||0}%</span></div>`:''}
+        ${t.completed&&t.completed_at?`<div class="completed-at">✅ 完成于 ${fmtDT(t.completed_at)}</div>`:''}
+        ${t.completion_desc?`<div style="font-size:.76em;color:#2ed573;">完成说明：${esc(t.completion_desc)}</div>`:''}
+        ${logs?`<div class="tl-mini-label">📋 进展记录（${t.progress_logs.length}）</div><div class="tl-mini">${logs}</div>`:'<div class="tl-mini-label" style="color:#5a6678;">📋 暂无进展记录</div>'}
+        ${!t.completed?`<div class="row" style="margin-top:5px;gap:5px;flex-wrap:wrap;">
+          <input type="text" id="log-${t.id}" placeholder="记录进展..." class="inline-input" style="flex:1;min-width:100px;">
+          <input type="date" id="logdate-${t.id}" class="inline-input" title="日期：勾选完成时作为完成日期，记录进展时作为进展日期；不填默认为今天" style="width:140px;">
+          <button class="mini-btn" id="logbtn-${t.id}" onclick="addLog(${t.id})">记录</button>
+          <button class="mini-btn ok" id="donebtn-${t.id}" onclick="toggleTodo(${t.id},true)">✓ 完成</button>
+          <button class="mini-btn danger" onclick="deleteTodo(${t.id})">删除</button>
+        </div>`:`<button class="mini-btn danger" style="margin-top:3px;" onclick="deleteTodo(${t.id})">删除</button>`}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+let pendingMilestoneId=null;
+function openTodoModal(mid,stepName){
+  pendingMilestoneId=mid;
+  tdText.value='';tdPriority.value='medium';tdDue.value='';tdBtn.disabled=true;
+  todoStep.textContent=stepName?`（${stepName}）`:'';
+  todoModal.classList.add('active');setTimeout(()=>tdText.focus(),50);
+}
+function closeTodoModal(){todoModal.classList.remove('active');pendingMilestoneId=null;}
+async function submitTodoModal(){
+  const text=tdText.value.trim();if(!text)return;
+  await fetch(`${API}/api/projects/${current.id}/todos`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text,priority:tdPriority.value,due_date:tdDue.value||null,milestone_id:pendingMilestoneId})});
+  closeTodoModal();await loadAllData();
+}
+async function setEventDate(id,date){
+  await fetch(`${API}/api/timeline/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({time:date||''})});
+  await loadAllData();
+}
+async function toggleEvent(id,done){await fetch(`${API}/api/timeline/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({is_done:done})});await loadAllData();}
+async function deleteEvent(id){if(!confirm('删除该节点？'))return;await fetch(`${API}/api/timeline/${id}`,{method:'DELETE'});await loadAllData();}
+async function toggleTodo(id,ck){
+  let completed_at;
+  if(ck){
+    const el=document.getElementById(`logdate-${id}`);
+    completed_at=(el&&el.value)?el.value:new Date().toISOString();
+  }
+  await fetch(`${API}/api/todos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({completed:ck,completed_at})});
+  await loadAllData();
+}async function setProgress(id,v){await fetch(`${API}/api/todos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({progress:parseInt(v)})});await loadAllData();}
+async function addLog(id){
+  const inp=document.getElementById(`log-${id}`);
+  const din=document.getElementById(`logdate-${id}`);
+  const btn=document.getElementById(`logbtn-${id}`);
+  const t=(inp&&inp.value||'').trim();
+  if(!t){inp&&inp.focus(); alert('请先填写进展内容'); return;}
+  if(btn){btn.disabled=true;btn.textContent='记录中...';}
+  try{
+    const res=await fetch(`${API}/api/todos/${id}/progress`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t,progress_date:(din&&din.value)||null})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    if(inp)inp.value='';
+    if(din)din.value='';
+    await loadAllData();
+  }catch(e){
+    alert('进展记录失败：'+e.message);
+    if(btn){btn.disabled=false;btn.textContent='记录';}
+  }
+}
+async function deleteTodo(id){if(!confirm('删除该待办？'))return;await fetch(`${API}/api/todos/${id}`,{method:'DELETE'});await loadAllData();}
+
+/* 风险 */
+function renderRisksDrawer(){
+  const list=current.risks||[];
+  dRisks.innerHTML=list.length?list.map(r=>`
+    <div class="risk-item ${r.resolved?'resolved':''}">
+      <div class="row">
+        <span style="color:${SEV_C[r.severity]}">● ${SEV[r.severity]}</span>
+        <span class="rdesc" style="flex:1;">${esc(r.description)}</span>
+        <button class="mini-btn ${r.resolved?'warn':'ok'}" onclick="toggleRisk(${r.id},${r.resolved?0:1})">${r.resolved?'重新打开':'标记解决'}</button>
+        <button class="mini-btn danger" onclick="deleteRisk(${r.id})">删除</button>
+      </div>
+      ${!r.resolved?`<div class="row" style="margin-top:6px;"><input type="text" id="rs-${r.id}" placeholder="解决说明（可选）" class="inline-input" style="flex:1;"><button class="mini-btn ok" onclick="resolveWithNote(${r.id})">记录并解决</button></div>`:(r.resolution_note?`<div style="font-size:.78em;color:#2ed573;margin-top:4px;">解决说明：${esc(r.resolution_note)}</div>`:'')}
+    </div>`).join(''):'<div class="empty">暂无风险点</div>';
+}
+function openRiskModal(){
+  rkDesc.value='';rkSev.value='medium';rkBtn.disabled=true;
+  riskModal.classList.add('active');setTimeout(()=>rkDesc.focus(),50);
+}
+function closeRiskModal(){riskModal.classList.remove('active');}
+async function submitRisk(){
+  const desc=rkDesc.value.trim();if(!desc)return;
+  await fetch(`${API}/api/projects/${current.id}/risks`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:desc,severity:rkSev.value})});
+  closeRiskModal();await loadAllData();
+}
+async function toggleRisk(id,res){await fetch(`${API}/api/risks/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({resolved:res})});await loadAllData();}
+async function resolveWithNote(id){const n=document.getElementById(`rs-${id}`).value.trim();await fetch(`${API}/api/risks/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({resolved:1,resolution_note:n})});await loadAllData();}
+async function deleteRisk(id){if(!confirm('删除该风险？'))return;await fetch(`${API}/api/risks/${id}`,{method:'DELETE'});await loadAllData();}
+
+async function deleteCurrentProject(){
+  if(!confirm('确定删除该项目？'))return;
+  await fetch(`${API}/api/projects/${current.id}`,{method:'DELETE'});
+  closeDrawer();await loadAllData();
+}
+
+/* 初始化 */
+let aiData=null;
+async function parseReview(){
+  if(!current){alert('请先打开一个项目');return;}
+  aiModal.classList.add('active');
+  aiBody.style.display='none';aiConfirmBtn.style.display='none';aiError.style.display='none';
+  aiLoading.style.display='block';aiStatus.textContent='';
+  try{
+    const res=await fetch(`${API}/api/projects/${current.id}/parse-review`,{method:'POST'});
+    const data=await res.json();
+    if(!res.ok){throw new Error(data.detail||'解析失败');}
+    aiData=data;
+    renderAiPreview(data);
+    aiLoading.style.display='none';aiBody.style.display='block';aiConfirmBtn.style.display='inline-block';
+  }catch(e){
+    aiLoading.style.display='none';
+    aiError.style.display='block';aiError.textContent='❌ '+(e.message||'解析失败');
+  }
+}
+function closeAiModal(){aiModal.classList.remove('active');aiData=null;}
+
+function saleStepOptions(selected){
+  const steps=(meta&&meta.sale_steps&&meta.sale_steps[current.category||'platform'])||[];
+  return '<option value="">未分配</option>'+steps.map(st=>`<option value="${esc(st)}" ${st===selected?'selected':''}>${esc(st)}</option>`).join('');
+}
+
+function renderAiPreview(d){
+  const p=d.project||{};
+  aiName.value=p.name||'';aiCustomer.value=p.customer||'';aiPm.value=p.pm||'';
+  aiCategory.value=p.category||'';aiOps.value=p.ops_team||'';
+  aiAmount.value=(p.amount?(p.amount/10000):'');aiMargin.value=p.profit_margin||'';
+  aiCompleted.value=p.completed?'1':'0';aiEarly.checked=!!p.early_implementation;
+  aiDesc.value=p.description||'';
+  // suppliers
+  aiSuppliers.innerHTML=(d.suppliers||[]).map((s,i)=>aiSupRow(s,i)).join('')||'<div class="empty">无</div>';
+  // meetings
+  const m=d.meetings||{};
+  aiMtgTech.value=m.tech_review_at||'';aiMtgProject.value=m.project_review_at||'';aiMtgKickoff.value=m.kickoff_at||'';
+  // risks
+  aiRisks.innerHTML=(d.risks||[]).map((r,i)=>aiRiskRow(r,i)).join('')||'<div class="empty">无</div>';
+  // todos
+  aiTodos.innerHTML=(d.todos||[]).map((t,i)=>aiTodoRow(t,i)).join('')||'<div class="empty">无</div>';
+}
+function aiSupRow(s,i){
+  i=i??Date.now();
+  return `<div style="margin-bottom:8px;padding:6px;background:rgba(0,0,0,.18);border-radius:6px;">
+    <div class="row" style="margin-bottom:4px;gap:6px;">
+      <input class="inline-input" data-k="name" value="${esc(s.name||'')}" placeholder="供应商名称" style="flex:1;">
+      <select class="inline-input" data-k="method" style="width:110px;">
+        <option ${s.procurement_method==='公开询比'?'selected':''}>公开询比</option>
+        <option ${s.procurement_method==='直接采购'?'selected':''}>直接采购</option>
+        <option ${s.procurement_method==='公开招标'?'selected':''}>公开招标</option>
+        <option ${s.procurement_method==='原子能力下单'?'selected':''}>原子能力下单</option>
+      </select>
+      <button class="mini-btn danger" onclick="this.closest('div').parentElement.remove()">删</button>
+    </div>
+    <input class="inline-input" data-k="content" value="${esc(s.supply_content||'')}" placeholder="采购内容（如：服务器设备、网络设备、实施服务...）" style="width:100%;">
+  </div>`;
+}
+function aiRiskRow(r,i){
+  return `<div class="row" style="margin-bottom:6px;gap:6px;">
+    <select class="inline-input" data-k="sev" style="width:80px;">
+      <option value="high" ${r.severity==='high'?'selected':''}>高</option>
+      <option value="medium" ${r.severity==='medium'?'selected':''}>中</option>
+      <option value="low" ${r.severity==='low'?'selected':''}>低</option>
+    </select>
+    <input class="inline-input" data-k="desc" value="${esc(r.description||'')}" placeholder="风险描述" style="flex:1;">
+    <button class="mini-btn danger" onclick="this.parentElement.remove()">删</button>
+  </div>`;
+}
+function aiTodoRow(t,i){
+  return `<div style="margin-bottom:8px;padding:6px;background:rgba(0,0,0,.18);border-radius:6px;">
+    <div class="row" style="gap:6px;margin-bottom:4px;">
+      <select class="inline-input" data-k="ms" style="width:130px;">${saleStepOptions(t.milestone||'')}</select>
+      <select class="inline-input" data-k="pri" style="width:70px;">
+        <option value="high" ${t.priority==='high'?'selected':''}>高</option>
+        <option value="medium" ${t.priority==='medium'?'selected':''}>中</option>
+        <option value="low" ${t.priority==='low'?'selected':''}>低</option>
+      </select>
+      <input type="date" class="inline-input" data-k="due" value="${t.due_date||''}" style="width:140px;">
+      <button class="mini-btn danger" onclick="this.closest('div').parentElement.remove()">删</button>
+    </div>
+    <input class="inline-input" data-k="text" value="${esc(t.text||'')}" placeholder="待办内容" style="width:100%;">
+  </div>`;
+}
+function aiAddRow(kind){
+  if(kind==='sup'){const d=document.createElement('div');d.innerHTML=aiSupRow({},Date.now());aiSuppliers.appendChild(d.firstElementChild);}
+  if(kind==='risk'){const d=document.createElement('div');d.innerHTML=aiRiskRow({},Date.now());aiRisks.appendChild(d.firstElementChild);}
+  if(kind==='todo'){const d=document.createElement('div');d.innerHTML=aiTodoRow({},Date.now());aiTodos.appendChild(d.firstElementChild);}
+}
+function collectRows(box, mapper){
+  return Array.from(box.children).map(mapper).filter(Boolean);
+}
+async function confirmAiParse(){
+  const proj={
+    name:aiName.value.trim(),customer:aiCustomer.value.trim(),pm:aiPm.value.trim(),
+    category:aiCategory.value||undefined,ops_team:aiOps.value.trim(),
+    amount:Math.round(parseFloat(aiAmount.value||0)*10000),
+    profit_margin:parseFloat(aiMargin.value||0),
+    completed:parseInt(aiCompleted.value),early_implementation:aiEarly.checked?1:0,
+    description:aiDesc.value.trim()
+  };
+  // 属性：仅提交有值的字段（避免空值覆盖）
+  const patch={};
+  Object.entries(proj).forEach(([k,v])=>{if(v!==''&&v!==undefined&&!(typeof v==='number'&&isNaN(v)))patch[k]=v;});
+  if(aiCategory.value)patch.category=aiCategory.value;
+  aiStatus.textContent='写入中...';
+  try{
+    if(Object.keys(patch).length){
+      const r=await fetch(`${API}/api/projects/${current.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
+      if(!r.ok)throw new Error('属性保存失败');
+    }
+    // 会议日期
+    const mtg={tech_review_at:aiMtgTech.value,project_review_at:aiMtgProject.value,kickoff_at:aiMtgKickoff.value};
+    await fetch(`${API}/api/projects/${current.id}/meetings`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(mtg)});
+    // 供应商
+    for(const el of Array.from(aiSuppliers.children)){
+      const nameEl=el.querySelector('[data-k=name]');if(!nameEl)continue;
+      const name=nameEl.value.trim();
+      const methodEl=el.querySelector('[data-k=method]');
+      const method=methodEl?methodEl.value:'公开询比';
+      const contentEl=el.querySelector('[data-k=content]');
+      const content=contentEl?contentEl.value.trim():'';
+      if(name) await fetch(`${API}/api/projects/${current.id}/suppliers`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,procurement_method:method,supply_content:content})});
+    }
+    // 风险
+    for(const el of Array.from(aiRisks.children)){
+      const desc=el.querySelector('[data-k=desc]');if(!desc)continue;
+      const d=desc.value.trim();
+      const sevEl=el.querySelector('[data-k=sev]');
+      const sev=sevEl?sevEl.value:'medium';
+      if(d) await fetch(`${API}/api/projects/${current.id}/risks`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:d,severity:sev})});
+    }
+    // 待办（需匹配 milestone_id）
+    const fresh=await (await fetch(`${API}/api/projects/${current.id}`)).json();
+    const stepMap={};(fresh.timeline||[]).filter(e=>e.is_sale_step).forEach(e=>{stepMap[e.event_type]=e.id;});
+    for(const el of Array.from(aiTodos.children)){
+      const t=el.querySelector('[data-k=text]');if(!t)continue;
+      const text=t.value.trim();if(!text)continue;
+      const msEl=el.querySelector('[data-k=ms]');
+      const priEl=el.querySelector('[data-k=pri]');
+      const dueEl=el.querySelector('[data-k=due]');
+      const ms=msEl?msEl.value:'';
+      const pri=priEl?priEl.value:'medium';
+      const due=dueEl?dueEl.value:null;
+      await fetch(`${API}/api/projects/${current.id}/todos`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,priority:pri,due_date:due||null,milestone_id:stepMap[ms]||null})});
+    }
+    closeAiModal();
+    await loadAllData();
+  }catch(e){
+    aiStatus.textContent='';
+    aiError.style.display='block';aiError.textContent='❌ '+(e.message||'写入失败');
+  }
+}
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  await loadMeta();await loadAllData();
+  setInterval(()=>{const ae=document.activeElement;if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT'))return;loadAllData();},30000);
+});
+</script>
+
+<!-- AI 解析预览 -->
+<div class="modal-overlay" id="aiModal">
+  <div class="modal-box" style="max-width:680px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-title">🤖 AI 解析结果预览 <span id="aiStatus" style="font-size:.7em;color:#8a96a8;font-weight:normal;"></span></div>
+    <div id="aiBody" style="display:none;">
+      <div class="section" style="margin-top:0;">
+        <h3 style="font-size:.95em;">项目属性</h3>
+        <div class="field"><label>项目名称</label><input id="aiName"></div>
+        <div class="grid2">
+          <div class="field"><label>前向客户</label><input id="aiCustomer"></div>
+          <div class="field"><label>项目经理</label><input id="aiPm"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>项目分类</label><select id="aiCategory"><option value="">未识别</option><option value="platform">平台类</option><option value="hybrid">硬件平台混合</option><option value="hardware">硬件类</option></select></div>
+          <div class="field"><label>运维承接组</label><input id="aiOps"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>项目金额（万元）</label><input id="aiAmount" type="number" step="0.01"></div>
+          <div class="field"><label>利润率（%）</label><input id="aiMargin" type="number" step="0.1"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>项目状态</label><select id="aiCompleted"><option value="0">实施中</option><option value="1">已完成</option></select></div>
+          <div class="field"><label style="display:flex;align-items:center;gap:8px;height:38px;color:#ccc;"><input type="checkbox" id="aiEarly" style="width:auto;"> 是否提前实施</label></div>
+        </div>
+        <div class="field"><label>项目简介</label><textarea id="aiDesc" style="min-height:54px;"></textarea></div>
+      </div>
+      <div class="section">
+        <h3 style="font-size:.95em;display:flex;justify-content:space-between;">后向供应商 <button class="mini-btn" onclick="aiAddRow('sup')">+ 添加</button></h3>
+        <div id="aiSuppliers"></div>
+      </div>
+      <div class="section">
+        <h3 style="font-size:.95em;">会议日期</h3>
+        <div class="grid2">
+          <div class="field"><label>技术评审会</label><input type="date" id="aiMtgTech"></div>
+          <div class="field"><label>项目评审会</label><input type="date" id="aiMtgProject"></div>
+        </div>
+        <div class="field"><label>交底会</label><input type="date" id="aiMtgKickoff"></div>
+      </div>
+      <div class="section">
+        <h3 style="font-size:.95em;display:flex;justify-content:space-between;">风险点 <button class="mini-btn danger" onclick="aiAddRow('risk')">+ 添加</button></h3>
+        <div id="aiRisks"></div>
+      </div>
+      <div class="section">
+        <h3 style="font-size:.95em;display:flex;justify-content:space-between;">待办事项 <button class="mini-btn" onclick="aiAddRow('todo')">+ 添加</button></h3>
+        <div id="aiTodos"></div>
+      </div>
+    </div>
+    <div id="aiLoading" style="color:#8a96a8;padding:20px 0;text-align:center;">⏳ 正在阅读评审材料并提取信息，大约需要 10-30 秒...</div>
+    <div id="aiError" style="display:none;color:#ff6b7a;padding:10px 0;"></div>
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" onclick="closeAiModal()">取消</button>
+      <button class="modal-btn modal-btn-confirm" id="aiConfirmBtn" style="display:none;" onclick="confirmAiParse()">确认写入</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
